@@ -15,22 +15,26 @@ class BookingWizard(NamedUrlSessionWizardView):
 
     def get_form(self, step=None, data=None, files=None):
         form = super(BookingWizard, self).get_form(data=data, files=files)
-
         current_step = self.steps.current
 
-        # get the data for step 1 on step 3
+        if current_step == 'step1':
+            self.storage.set_step_data('step2', None)
+
         if current_step == 'step2':
             prev_data = self.storage.get_step_data('step1')
             number = prev_data.get('step1-number', '')
-            print('STEP 2 DATA:', number)
             factory = inlineformset_factory(
                 Booking,
                 BookingPerson,
                 # form=ModelForm,
                 # formset=BaseInlineFormSet,
                 fields=('name',),
-                extra=int(number))
-            return factory()
+                extra=int(number),
+                can_delete=False)
+            if data:
+                return factory(data)
+            else:
+                return factory()
 
         return form
 
