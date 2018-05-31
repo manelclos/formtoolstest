@@ -4,7 +4,7 @@ from django.forms.models import inlineformset_factory
 from formtools.wizard.views import NamedUrlSessionWizardView
 
 from .forms import NumberOfTicketsForm, PeopleForm, OtherForm
-from .models import Booking, BookingPerson
+from .models import Booking, TicketPerson
 
 
 class BookingWizard(NamedUrlSessionWizardView):
@@ -12,6 +12,10 @@ class BookingWizard(NamedUrlSessionWizardView):
 
     def get_form_instance(self, step):
         return Booking()
+
+    def process_step(self, form):
+        print('Doing something EXTRA')
+        return self.get_form_step_data(form)
 
     def get_form(self, step=None, data=None, files=None):
         form = super(BookingWizard, self).get_form(data=data, files=files)
@@ -25,12 +29,13 @@ class BookingWizard(NamedUrlSessionWizardView):
             number = prev_data.get('step1-number', '')
             factory = inlineformset_factory(
                 Booking,
-                BookingPerson,
+                TicketPerson,
                 # form=ModelForm,
                 # formset=BaseInlineFormSet,
-                fields=('name',),
+                fields=('name', 'surname', 'email'),
                 extra=int(number),
                 can_delete=False)
+
             if data:
                 return factory(data)
             else:
